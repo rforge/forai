@@ -1,3 +1,5 @@
+#Rodrigo
+
 rm(list=ls(all=TRUE)) 
 
 library(tseries)
