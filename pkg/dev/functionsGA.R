@@ -1,10 +1,10 @@
 ####################### Inicializa as funcoes ################################
 #Draw.Individual <- function(ptotalSum, pfitnessPopulation, psizePopulation)
-#Crossover.Average <- function(pindexFather, pindexMother, ppopulation)
-#crossover.Maximo <- function(p_pai, p_mae, p_tamanhoGene, p_comunidade, p_peso)
-#crossover.Minimo <- function(p_pai, p_mae, p_tamanhoGene, p_comunidade, p_peso)
-#crossover.Duplo <- function(p_pai, p_mae, p_tamanhoGene, p_comunidade, p_peso)
-#calcular.Fitness <- function(p_tipoFitness, p_Individuo, p_  p_TarTreino, p_SetTreino, p_Iteracao)
+#Crossover.Mean <- function(pindexFather, pindexMother, ppopulation)
+#Crossover.Maximum <- function(pindexFather, pindexMother, ppopulation, pweight)
+#Crossover.Minimum <- function(pindexFather, pindexMother, ppopulation, pweight)
+#Crossover.Double <- function(pindexFather, pindexMother, ppopulation, pweight)
+#Mutation <- function(pgene, pmutationType)
 #source('erros.R')
 
 ######################### ######################### ######################### 
@@ -41,52 +41,60 @@ Crossover.Mean <- function(pindexFather, pindexMother, ppopulation) {
 }#end crossover mean
 
 Crossover.Maximum <- function(pindexFather, pindexMother, ppopulation, pweight) {
-  sizeGene <- length(chromossomeFather)
+  
   chromossomeFather <- ppopulation[,pindexFather]
   chromossomeMother <- ppopulation[,pindexMother]
   
 	valueMaximum = max(max(chromossomeFather),max(chromossomeMother))
-
-  offspring <- rep(0, times=sizeGene)
-  for(s in 1:sizeGene)
-  {
-    maxValueFatherMother = max(chromossomeFather[s], chromossomeMother[s])
-    offspring[s] = (maxValueFatherMother*(1- pweight)) + (maxValueFatherMother * pweight)
-  }
+  
+  maxValueFatherMother <- apply(cbind(chromossomeFather, chromossomeMother),1,max)
+  offspring <-(valueMaximum*(1- pweight)) + (maxValueFatherMother * pweight)
+  
   return (offspring)
 }#Crossover.Maximum
 
 Crossover.Minimum <- function(pindexFather, pindexMother, ppopulation, pweight) {
-  sizeGene <- length(chromossomeFather)
+  
   chromossomeFather <- ppopulation[,pindexFather]
   chromossomeMother <- ppopulation[,pindexMother]
   
   valueMinimum = min(min(chromossomeFather),min(chromossomeMother))
-
-  offspring <- rep(0, times=sizeGene)
-  for(s in 1:sizeGene)
-  {
-    minValueFatherMother = min(chromossomeFather[s], chromossomeMother[s])
-    offspring[s] = (minValueFatherMother*(1- pweight)) + (minValueFatherMother * pweight)
-  }
+  
+  minValueFatherMother <- apply(cbind(chromossomeFather, chromossomeMother),1,min)
+  offspring <-(valueMinimum*(1- pweight)) + (minValueFatherMother * pweight)
+  
   return (offspring)
-}#end Crossover.Minimum
+}#Crossover.Maximum
 
-crossover.Duplo <- function(p_pai, p_mae, p_tamanhoGene, p_comunidade, p_peso) {
+Crossover.Double <- function(pindexFather, pindexMother, ppopulation, pweight) {
 
-       cromossomoPai <- p_comunidade[,p_pai]
-       cromossomoMae <- p_comunidade[,p_mae]
+  chromossomeFather <- ppopulation[,pindexFather]
+  chromossomeMother <- ppopulation[,pindexMother]
+  
+  valueMaximum = max(max(chromossomeFather),max(chromossomeMother))
+  valueMinimum = min(min(chromossomeFather),min(chromossomeMother))
+  
+  maxValueFatherMother <- apply(cbind(chromossomeFather, chromossomeMother),1,max)
+  minValueFatherMother <- apply(cbind(chromossomeFather, chromossomeMother),1,min)
 
-       valorMinimo = min(min(cromossomoPai), min(cromossomoMae))
-       valorMaximo = max(max(cromossomoPai), max(cromossomoMae))
+  offspring <- ((valueMaximum+valueMinimum)*(1-pweight)+((chromossomeFather + chromossomeMother)* pweight))/2
 
-       s=0
-       filho <- rep(0, times=p_tamanhoGene)
-       for(s in 1:p_tamanhoGene){
-               filho[s]  = ((valorMinimo+valorMaximo)*(1-p_peso)
-					+((cromossomoPai[s] + cromossomoMae[s])* p_peso))/2
-	}
-       return (filho)
+  return (offspring)
+}
+
+######################### ######################### ######################### 
+#########################     MUtation                  #####################
+######################### ######################### ######################### 
+Mutation <- function(pgene, pmutationType) {
+  offspring <- switch(pmutationType,
+                    "ALL"= pgene + rnorm(length(pgene)), 
+                    "HALF"=pgene + (sample(0:1,length(pgene),replace=T)*rnorm(pgene)), 
+                    "ONE" =  {
+                        draw <- sample(1:length(pgene),1)
+                        pgene[draw]= pgene[draw]+ rnorm(1)
+                        pgene
+                      }#end one member mutation
+                      )#end switch
 }
 
 ######################### ######################### ######################### 
@@ -142,9 +150,9 @@ calcular.Output <- function(p_Individuo, p_x.Train, p_y.Train, p_x.Test){
 	return(gerado)
 }
 
-run.GA <- function(p_Geracoes, p_GeracaoSFilho, p_Mutacao, p_Peso, 
-			tamanhoGene, p_sizePopulation, x.fit.train, y.fit.train, x.fit.valid, y.fit.valid,
-			p_amostra,tipoFitness,comunidade){
+Run.GA <- function(pgenerationNumber, pgenerationImprovement, pmutationProbability, pweight, 
+			pgenesize, p_sizePopulation, x.fit, y.fit, p_amostra,tipoFitness,comunidade){
+
 peso = p_Peso
 probMutacao = p_Mutacao
 geracaoMaxima = p_Geracoes
