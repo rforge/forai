@@ -7,7 +7,7 @@
 #                                                                              #
 #     Name:      SVR-ES.R                                                      #
 #     Type:      R source code                                                 #
-#     Version:   0.1                                                           #
+#     Version:   0.2                                                           #
 #     Date:      2012-02-10 (modifications by AJC 2012-10-02)                  #
 #     Dependencies: qualV, e1071, FNN, Boruta, CaDENCE                         #
 #                                                                              #
@@ -40,41 +40,42 @@ require("CaDENCE")
 
 train.svr <- 
   #separates crossvalidation and split 
-  function(x.train, y.train, hypparameter, ErrorFunc, PercentValid=20, kfold=1,SplitRandom=FALSE, kernel="radial"){
+  function(xtrain, ytrain, hypparameter, ErrorFunc, PercentValid=20, kfold=1,
+           SplitRandom=FALSE, kernel="radial"){
   
   if(kfold>1){
-    n.cases
+    n.cases =nrow(xtrain)
     index.block <- xval.buffer(n.cases, kfold)
     pred.valid <- rep(Inf, n.cases)
 
-    for(nb in 1:n.blocks){
-        svr.try <- try(svm(x.train[index.block[[nb]]$train,,drop=FALSE], 
-                           y.train[index.block[[nb]]$train,,drop=FALSE],
+    for(nb in 1:kfold){
+        svr.try <- try(svm(xtrain[index.block[[nb]]$train,,drop=FALSE], 
+                           ytrain[index.block[[nb]]$train,,drop=FALSE],
                             kernel=kernel, gamma=hypparameter[1], 
                             epsilon=hypparameter[2], cost=hypparameter[3]),
                        silent=TRUE)
         
         if(class(svr.try)!='try-error'){
-          pred.valid[index.block[[nb]]$valid] = predict(svr.try, x.train[index.block[[nb]]$valid,,drop=FALSE])
+          pred.valid[index.block[[nb]]$valid] = predict(svr.try, xtrain[index.block[[nb]]$valid,,drop=FALSE])
         }else{
           return (list(error.svm=TRUE))
         }
     }#end for crossvalidation  
-    return (list(fitted=pred.valid,ffValid= ErrorFunc(y.train, pred.valid)))
+    return (list(error.svm=FALSE, fitted=pred.valid,ffValid= ErrorFunc(ytrain, pred.valid)))
   }else{
-    nTrain = nrow(x.train)
+    nTrain = nrow(xtrain)
     indValid <- nTrain-round((nTrain*(PercentValid/100)))
     if(SplitRandom){
       cases <- sample(nTrain)
       x.fit <- x.train[cases,,drop=FALSE]
       y.fit <- y.train[cases]
     }
-    x.fit.train <- x.train[1:indValid,,drop=FALSE]
-    x.fit.valid <- x.train[(indValid+1):nTrain,,drop=FALSE]
-    y.fit.train <- y.train[1:indValid]
-    y.fit.valid <- y.train[(indValid+1):nTrain]
+    x.fit.train <- xtrain[1:indValid,,drop=FALSE]
+    x.fit.valid <- xtrain[(indValid+1):nTrain,,drop=FALSE]
+    y.fit.train <- ytrain[1:indValid]
+    y.fit.valid <- ytrain[(indValid+1):nTrain]
     
-    svr.try <- try(svm(x.train,y.train,kernel="radial",
+    svr.try <- try(svm(x.fit.train,y.fit.train,kernel="radial",
               gamma=hypparameter[1], epsilon=hypparameter[2],
               cost=hypparameter[3]),
               silent=TRUE)
@@ -84,7 +85,7 @@ train.svr <-
       return (list(error.svm=FALSE, fitted.train=sv$fitted, fitted.valid=predict(sv, x.fit.valid), 
                   ffValid= ErrorFunc(y.fit.valid, predict(sv, x.fit.valid)),
                   ffTrain = ErrorFunc(y.fit.train, sv$fitted)))
-    } else{
+    }else{
       return (list(error.svm=TRUE))
     }
   }#end if crossvalidation 
@@ -94,7 +95,7 @@ svres <-
   # Hybrid method combining Support Vector Regression and Evolutionary Strategy
   function(X.train, Y.train, X.test, PercentValid=20, Generations=500,
            InitialGamma=0.001, ErrorFunc=MSE, Step=TRUE, StepBoruta=FALSE,
-           SplitRandom=FALSE, Trace=TRUE, dTrace=10,earlyStop=100,kfold=1)
+           SplitRandom=FALSE, Trace=TRUE, dTrace=10,earlyStop=50,kfold=1)
   {
     if(Step & !StepBoruta) {
       #################### prescreening predictors ###########################
@@ -110,7 +111,7 @@ svres <-
       x.fit <- X.train[,step.coef,drop=FALSE]
       x.test <- X.test[,step.coef,drop=FALSE]
       stepvars <- colnames(X.train) %in% step.coef
-    } else if(Step & StepBoruta){
+    }else if(Step & StepBoruta){
       trf <- suppressWarnings(tuneRF(X.train, Y.train, doBest=TRUE,
                                      plot=FALSE, ntree=500, nodesize=1))
       bor <- Boruta(x=as.data.frame(X.train), y=Y.train, light=FALSE,
@@ -120,8 +121,7 @@ svres <-
       stepvars <- stepvars==1
       x.fit <- X.train[,stepvars,drop=FALSE]
       x.test <- X.test[,stepvars,drop=FALSE]
-    }
-    else{
+    }else{
       x.fit <- X.train
       x.test <- X.test
       stepvars <- rep(TRUE, ncol(X.train))
@@ -142,10 +142,11 @@ svres <-
     names(hypparameter) <- c("Gamma", "Epsilon", "C")
     
     fitted.svr <- train.svr(x.fit, y.fit, hypparameter, ErrorFunc, PercentValid, kfold)
+    ffValid <- fitted.svr$ffValid
+    
     if(kfold == 1){
-      ffValid <- fitted.svr$ffValid
+      ffTrain <- fitted.svr$ffTrain
     }
-    ffTrain <- fitted.svr$ffTrain
     mutation <- hypparameter
     noevolution <- 0
     ############ running the generations #######################################
@@ -161,7 +162,7 @@ svres <-
       fitted.svr <- train.svr(x.fit, y.fit, son, ErrorFunc, PercentValid, kfold)
       
       if(fitted.svr$error.svm){
-        ffSonTrain <- Inf
+        ffSonValid <- Inf
       } else{
         ffSonValid <- fitted.svr$ffValid
       }
@@ -186,7 +187,11 @@ svres <-
       
       if(Trace & ((d%%dTrace)==0)){
         cat('Generation --> ', d, "\n")
-        cat("Error: Train -->",  ffTrain, " | Valid --> ", ffValid,"\n")
+        if(kfold > 1 ){
+          cat("Error: Valid --> ", ffValid,"\n")
+        }else{
+          cat("Error: Train -->",  ffTrain, " | Valid --> ", ffValid,"\n")
+        }
       }
       if(noevolution > earlyStop){
         break
@@ -196,30 +201,22 @@ svres <-
     sv <- svm(x.fit,y.fit,kernel="radial", gamma=hypparameter[1],
               epsilon=hypparameter[2], cost=hypparameter[3])
     p.svmES <- predict(sv, x.test)
-    svres.results <- list(hypparameter=hypparameter, forecast=p.svmES,
-                          svmf=sv, ffTrain=ffTrain, ffValid=ffValid,
-                          stepvars=stepvars)
+    
+    if(kfold > 1 ){
+      svres.results <- list(hypparameter=hypparameter, forecast=p.svmES,
+                            svmf=sv, ffTrain=NULL, ffValid=ffValid,
+                            stepvars=stepvars)
+    }else{
+      svres.results <- list(hypparameter=hypparameter, forecast=p.svmES,
+                            svmf=sv, ffTrain=ffTrain, ffValid=ffValid,
+                            stepvars=stepvars)
+    }
     return (svres.results)
   }
 
 ################################################################################    
 
 #rm(list=ls(all=TRUE))
-
-library(qualV)
-library(e1071)
-library(FNN)
-
-##################                ATTENTION           ##########################      
-#                                                                              #
-#                                                                              #
-#                                                                              #
-#                   The data can be freely downloaded at                       #
-#                 http://theoval.cmp.uea.ac.uk/competition/                    #
-#                                                                              #
-#                                                                              #
-#                                                                              #
-################################################################################
 
 #################### loading and adjusting the dataset #########################
 data(FraserSediment, package='CaDENCE')
@@ -239,7 +236,7 @@ y.trainsd <- y.train/y.max
 y.testsd <- y.test/y.max
 
 ######################### using only 3000 points #################################
-resul <- svres(x.trainsd, y.trainsd, x.testsd)
+resul <- svres(x.trainsd, y.trainsd, x.testsd, Step=FALSE,kfold=5)
 MSE(y.testsd,resul$forecast)
 MAE(y.testsd,resul$forecast)
 
