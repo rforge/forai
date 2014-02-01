@@ -15,7 +15,6 @@
 #                                                                              #
 #     Aranildo R. Lima  <arodrigu@eos.ubc.ca>                                  #
 #     Alex J. Cannon                                                           #
-#     William W. Hsieh                                                         #
 #                                                                              #
 # References:                                                                  #
 #     Aranildo R. Lima, Alex J. Cannon, William W. Hsieh, Nonlinear regression #
