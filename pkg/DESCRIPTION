@@ -1,0 +1,9 @@
+Package: ForAI
+Type: Package
+Title: Forecasting with Artificial Intelligence
+Version: 0.0.1
+Date: 2014-01-31
+Author: Aranildo Lima
+Maintainer: Aranildo Lima <arodrig@eos.ubc.ca>
+Description: The package "ForAI" combines machine learning methods as artificial neural networks, support vector regression with evolutionary algorithms as genetic algorithms (GA), particle swarm optimization (PSO), evolutionary strategies (ES), etc.
+License: GPL-2
