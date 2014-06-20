@@ -128,23 +128,7 @@ Elm.predict <- function(TrainedElm, X.fit){
   }
 }#end function elm.Predict
 
-elm.ensemble <- function(X.fit, Y.fit, X.test, ensem= 20, NumberofHiddenNeurons=10){
-  ######### dividing valid set ############################
-  nTrain = length(Y.fit)  
-  resultEsTrain<-matrix(NA,nrow(X.fit),ensem) 
-  resultEsTest<-matrix(NA,nrow(X.test),ensem)
-    
-  ############################### generates the ensemble
-  for (e in 1:ensem) {
-    elm.Trained <- elm.optmization(X.fit,Y.fit, 0, NumberofHiddenNeurons)
-    resultEsTrain[,e] = elm.Trained$PredictionTrain
-    resultEsTest[,e] = elm.Predict(elm.Trained,X.test)
-  }# end for ensemble
-    
-  return (list(Trained=resultEsTrain,Tested=resultEsTest))
-}# end function elm.ensemble
-
-Elm.cross.valid <- function(X.fit, Y.fit, Number.hn, n.blocks=5,autorangeweight=FALSE){
+Elm.cross.valid <- function(X.fit, Y.fit, Number.hn, n.blocks=5,autorangeweight=FALSE,outputBias=FALSE){
   n.cases = length(Y.fit)
   index.block <- xval.buffer(n.cases, n.blocks)
   
@@ -152,7 +136,7 @@ Elm.cross.valid <- function(X.fit, Y.fit, Number.hn, n.blocks=5,autorangeweight=
   
   for(nb in 1:n.blocks){
     fit.elm <- Elm.optmization(X.fit[index.block[[nb]]$train,,drop=FALSE], Y.fit[index.block[[nb]]$train,,drop=FALSE],
-                               Number.hn=Number.hn,autorangeweight=autorangeweight)               
+                               Number.hn=Number.hn,autorangeweight=autorangeweight,outputBias=outputBias)               
     pred.ens.valid[index.block[[nb]]$valid,1] = Elm.predict(fit.elm, X.fit[index.block[[nb]]$valid,,drop=FALSE])
   }#end blocks
   return(pred.ens.valid)
@@ -161,7 +145,7 @@ Elm.cross.valid <- function(X.fit, Y.fit, Number.hn, n.blocks=5,autorangeweight=
 
 Elm.search.hn <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5, 
                           ErrorFunc=RMSE, percentValid=20,maxHiddenNodes = NULL,
-                          Trace=TRUE, autorangeweight=FALSE){
+                          Trace=TRUE, autorangeweight=FALSE,outputBias = FALSE){
   ###################### ajustando as informacoes do conjunto  #############################
   acceleration <- 1.51
   candidates <- c((-1/4*acceleration),0,(1/acceleration),acceleration)
@@ -205,10 +189,10 @@ Elm.search.hn <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5,
         #testHiddenNeurons =max(1,testHiddenNeurons)
         
         if(n.blocks!=1){
-            pred.ens.valid[,e] = Elm.cross.valid(X.fit,Y.fit,n.hidden.can,n.blocks,autorangeweight)
+            pred.ens.valid[,e] = Elm.cross.valid(X.fit,Y.fit,n.hidden.can,n.blocks,autorangeweight,outputBias=outputBias)
         }else{
             fit.elm <- Elm.optmization(X.fit[(1:indValid),,drop=FALSE],Y.fit[(1:indValid),drop=FALSE], 
-                                       Number.hn=n.hidden.can,autorangeweight=autorangeweight) 
+                                       Number.hn=n.hidden.can,autorangeweight=autorangeweight,outputBias=outputBias) 
             pred.ens.train[,e] = fit.elm$predictionTrain
             pred.ens.valid[,e] = Elm.predict(fit.elm, X.fit[((indValid+1):nTrain),,drop=FALSE])
         }
