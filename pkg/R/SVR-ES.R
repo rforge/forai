@@ -134,7 +134,7 @@ svres <-
     factor2 <- ((nTrain)^(1/5))*(nNeighbor-1)
     errorEst <- sqrt((factor1/factor2)*(kksvr$PRESS/nTrain))
     epsilCal <- 3*errorEst*(sqrt(log(nTrain)/nTrain))
-    C <- mean(y.fit) + 3*sd(c(y.fit))
+    C <- max(abs(mean(y.fit) + 3*sd(c(y.fit))),abs(mean(y.fit) - 3*sd(c(y.fit))))
     
     ##########  Initializing FF ################################################
     hypparameter <- c(InitialGamma,epsilCal, C)
