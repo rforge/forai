@@ -31,9 +31,9 @@
 #                                                                              #
 ################################################################################
 
-require("FNN")
+library("FNN")
 require("qualV")
-require("e1071")
+library("e1071")
 require("Boruta")
 require("CaDENCE")
 

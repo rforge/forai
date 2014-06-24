@@ -6,6 +6,7 @@ Date: 2014-01-31
 Author: Aranildo Lima
 Maintainer: Aranildo Lima <arodrig@eos.ubc.ca>
 Description: The package "ForAI" combines machine learning methods as artificial neural networks, support vector regression with evolutionary algorithms as genetic algorithms (GA), particle swarm optimization (PSO), evolutionary strategies (ES), etc.
-Suggests: MASS, FNN, qualV, e1071, Boruta, CaDENCE.
+Depends: e1071, FNN
+Suggests: MASS, qualV, Boruta, CaDENCE
 License: GPL-2
 URL: http://forai.r-forge.r-project.org/
