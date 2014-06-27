@@ -3,10 +3,11 @@
   
 \title{Fit Extreme Learning Machine (ELM)}
 \description{
-  Fit single-hidden-layer neural network, possibly with skip-layer connections.
+  Fit Extreme Learning Machine.
 }
 \usage{
-Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE, rangeweight = NULL, PenaltyP = 0, activation = "TANH", outputBias = FALSE)
+Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE, 
+          rangeweight = NULL, activation = "TANH", outputBias = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -15,7 +16,7 @@ Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE, rangeweight = N
   \item{Number.hn}{Number of units in the hidden layer. Default is \code{10}.}
   \item{autorangeweight}{Option whether to use the automated range used for the weights. Default is \code{FALSE}.}
   \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{NULL}}
-  \item{PenaltyP}{Values of the regularization factor. Default is \code{0}.}
+%  \item{PenaltyP}{Values of the regularization factor. Default is \code{0}.}
   \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' and 'SIG'.}
   \item{outputBias}{Option whether to use the bias parameter in the output layer}
 }
@@ -33,6 +34,7 @@ Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE, rangeweight = N
        G.-B. Huang, Q.-Y. Zhu, C.-K. Siew (2006)                              
        Extreme learning machine: Theory and applications                      
        Neurocomputing 70 (2006) 489-501                                       
+}
 
 \author{Aranildo Lima}
 

@@ -12,24 +12,12 @@ Elm.cross.valid(X.fit, Y.fit, Number.hn, n.blocks = 5, autorangeweight = FALSE, 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{X.fit}{
-%%     ~~Describe \code{X.fit} here~~
-}
-  \item{Y.fit}{
-%%     ~~Describe \code{Y.fit} here~~
-}
-  \item{Number.hn}{
-%%     ~~Describe \code{Number.hn} here~~
-}
-  \item{n.blocks}{
-%%     ~~Describe \code{n.blocks} here~~
-}
-  \item{autorangeweight}{
-%%     ~~Describe \code{autorangeweight} here~~
-}
-  \item{outputBias}{
-%%     ~~Describe \code{outputBias} here~~
-}
+  \item{X.fit}{Data matrix (numeric) containing the input values (predictors) used to train the model.}
+  \item{Y.fit}{Response vector (numeric) used to train the model.}
+  \item{Number.hn}{Number of units in the hidden layer. Default is \code{10}.}
+  \item{n.blocks}{an integer specifying the desired number of cross-validation folds. Default is \code{5}.}
+  \item{returnmodels}{whether to return the trained models. Default is \code{FALSE}.}
+  \item{...}{additional parameters for the low level fitting function \code{Elm.train}}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~

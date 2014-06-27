@@ -31,20 +31,21 @@ library(CaDENCE)
 #################################################################################################
 Elm.train <- 
   function(X.fit, Y.fit, Number.hn=10, autorangeweight=FALSE, rangeweight=NULL, 
-           PenaltyP=0, activation='TANH',outputBias = FALSE){
-  ############## carregando os valores ###################
+           activation='TANH',outputBias = FALSE){
+  ############## loading the values ###################
   X.fit <- t(X.fit)
   Target <- Y.fit
   n.InputNeurons=nrow(X.fit)
   n.TrainingData=ncol(X.fit)
-  ############################### Random generate input weights inputWeight (w_i) and biases biasofHN (b_i) of hidden neurons
+  
+  ####### automatic range of the weights based on the number of predictors  
   if(autorangeweight){
     if (is.null(rangeweight)){
       switch(activation,
              'TANH' = {a=1},
                       {a=2}
               )
-      rangew <- a*(n.InputNeurons)^-.5 # automatic range of the weights based on the number of predictors  
+      rangew <- a*(n.InputNeurons)^-.5 
     }else{
       rangew <- rangeweight
     }  
@@ -52,37 +53,40 @@ Elm.train <-
     rangew <- 1
     a <- 1
   }
+
+  ################## Random generate input weights inputWeight (w_i) and biases biasofHN (b_i) of hidden neurons
   inputWeight=matrix(runif(Number.hn*n.InputNeurons, min=-1, max=1),Number.hn, n.InputNeurons)*rangew
   biasofHN=runif(Number.hn, min=-1, max=1)*a
   
   tempH=inputWeight%*%X.fit
   ind=matrix(1,1,n.TrainingData)
   BiasMatrix=biasofHN%*%ind      # Extend the bias matrix biasofHN to match the demention of H
-  #clean a memory
-  rm(ind) 
   tempH=tempH+BiasMatrix
+  
+  #cleaning memory
+  rm(ind) 
   rm(BiasMatrix)
   
-  ############# Train ######################
+  ############# activaction function ######################
   switch(activation,
          'TANH' = {H=t(tanh(tempH))},
          {H= t(1 / (1 + exp(-tempH)))}
          )
-  #clean a memory
-  rm(tempH)
+  rm(tempH)   #cleaning memory
 
+  #bias parameter in the output layer
   if(outputBias){
     H <- cbind(1,H)    
   }
 
-  if (PenaltyP==0)
-  {
+#  if (PenaltyP==0)
+#  {
     outputWeight=(ginv(H) %*% Target)         # implementation without regularization factor //refer to 2006 Neurocomputing paper
-  }else{
+#  }else{
     #outputWeight = ginv((diag(ncol(H))/PenaltyP) + (t(H) %*% H)) %*% t(H) %*% Target  # implementation with regularization factor
-  }
+#  }
   
-  Y=as.vector(unlist(t(H %*% outputWeight)))                    #   Y: the actual output of the training data
+  Y=as.vector(unlist(t(H %*% outputWeight)))  #   Y: the actual output of the training data
   #for the os-ELM
   #P0 <- ginv(t(H)%*%H)
   #rm(H)
@@ -98,10 +102,11 @@ Elm.train <-
 }#end function elm.optmization
 
 Elm.predict <- function(TrainedElm, X.fit){
+  ############## loading the values ###################
   X.fit <- t(X.fit)
   NumberofData=ncol(X.fit)
-  ################## Valid ##########################
   
+  ###############   
   B <- TrainedElm$matrixBeta
   inputWeight <- TrainedElm$inputWeight
   biasofHN <- TrainedElm$biasofHN
@@ -109,10 +114,10 @@ Elm.predict <- function(TrainedElm, X.fit){
   tempH=inputWeight%*%X.fit
   ind=matrix(1,1,NumberofData)
   BiasMatrix=biasofHN%*%ind              #   Extend the bias matrix biasofHN to match the demention of H
-  #clean a memory
-  rm(ind) 
   tempH=tempH + BiasMatrix
-  #clean a memory
+  
+  #cleaning memory
+  rm(ind) 
   rm(BiasMatrix)
   
   #%%%%%%%% Sigmoid 
@@ -120,27 +125,37 @@ Elm.predict <- function(TrainedElm, X.fit){
          'TANH' = {H=t(tanh(tempH))},
         {H= t(1 / (1 + exp(-tempH)))}
   )
-  rm(tempH)
+  rm(tempH) #cleaning memory
   
   if(TrainedElm$outputBias){
-    return(as.vector(unlist(t(cbind(1,H) %*% B))))    #   %   TY: the actual output of the testing data with output HN
+    return(as.vector(unlist(t(cbind(1,H) %*% B))))    #   output using the output bias
   }else{
-    return(as.vector(unlist(t(H %*% B))))             #   %   TY: the actual output of the testing data
+    return(as.vector(unlist(t(H %*% B))))             #   output without the output bias
   }
 }#end function elm.Predict
 
-Elm.cross.valid <- function(X.fit, Y.fit, Number.hn, n.blocks=5,autorangeweight=FALSE,outputBias=FALSE){
+Elm.cross.valid <- function(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels = FALSE, ...){
+  #loading indices
   n.cases = length(Y.fit)
   index.block <- xval.buffer(n.cases, n.blocks)
+  
+  #creating the list of elms
+  t.elmf <- list()
+  length(t.elmf) <- n.blocks
   
   pred.ens.valid <- matrix(NA, n.cases, 1)
   
   for(nb in 1:n.blocks){
-    fit.elm <- Elm.optmization(X.fit[index.block[[nb]]$train,,drop=FALSE], Y.fit[index.block[[nb]]$train,,drop=FALSE],
-                               Number.hn=Number.hn,autorangeweight=autorangeweight,outputBias=outputBias)               
-    pred.ens.valid[index.block[[nb]]$valid,1] = Elm.predict(fit.elm, X.fit[index.block[[nb]]$valid,,drop=FALSE])
+    t.elmf[[nb]] <- Elm.train(X.fit[index.block[[nb]]$train,,drop=FALSE], Y.fit[index.block[[nb]]$train,,drop=FALSE],
+                               Number.hn=Number.hn,...)               
+    pred.ens.valid[index.block[[nb]]$valid,1] = Elm.predict(t.elmf[[nb]], X.fit[index.block[[nb]]$valid,,drop=FALSE])
   }#end blocks
-  return(pred.ens.valid)
+  
+  if (returnmodels = FALSE){
+    return(pred.ens.valid)
+  }else{
+    return(trained.elms = t.elmf, predictionTrain =  pred.ens.valid)
+  }
 }# end ensemble
 
 

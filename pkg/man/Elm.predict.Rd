@@ -1,37 +1,25 @@
 \name{Elm.predict}
 \alias{Elm.predict}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-%%  ~~function to do ... ~~
-}
-\description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
-}
+\title{ELM Predictions}
+\description{Function for predictions from the results of ELM model fitting function.}
 \usage{
 Elm.predict(TrainedElm, X.fit)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{TrainedElm}{
-%%     ~~Describe \code{TrainedElm} here~~
+  \item{TrainedElm}{an ELM object for which prediction is desired.}
+  \item{X.fit}{Data matrix (numeric) containing the input values (predictors).}
 }
-  \item{X.fit}{
-%%     ~~Describe \code{X.fit} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
+
+\value{The fitted values.}
+
 \references{
-%% ~put references to the literature/web site here ~
+       G.-B. Huang, Q.-Y. Zhu, C.-K. Siew (2006)                              
+       Extreme learning machine: Theory and applications                      
+       Neurocomputing 70 (2006) 489-501                                       
 }
+
 \author{
 %%  ~~who you are~~
 }
