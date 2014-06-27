@@ -33,37 +33,28 @@ Elm.predict(TrainedElm, X.fit)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (TrainedElm, X.fit) 
-{
-    X.fit <- t(X.fit)
-    NumberofData = ncol(X.fit)
-    B <- TrainedElm$matrixBeta
-    inputWeight <- TrainedElm$inputWeight
-    biasofHN <- TrainedElm$biasofHN
-    tempH = inputWeight \%*\% X.fit
-    ind = matrix(1, 1, NumberofData)
-    BiasMatrix = biasofHN \%*\% ind
-    rm(ind)
-    tempH = tempH + BiasMatrix
-    rm(BiasMatrix)
-    switch(TrainedElm$activation, TANH = {
-        H = t(tanh(tempH))
-    }, {
-        H = t(1/(1 + exp(-tempH)))
-    })
-    rm(tempH)
-    if (TrainedElm$outputBias) {
-        return(as.vector(unlist(t(cbind(1, H) \%*\% B))))
-    }
-    else {
-        return(as.vector(unlist(t(H \%*\% B))))
-    }
-  }
+  set.seed(12345)
+  attach(wtloss)
+  library("scales")
+  
+  train.index <- sample(length(wtloss$Days),size=40)
+  
+  #scaling the inputs/outputs
+  x.train <- rescale(as.matrix(wtloss$Days), to=c(-1,1))[train.index]
+  y.train <- rescale(as.matrix(wtloss$Weight), to=c(-1,1))[train.index]
+  x.test <- rescale(as.matrix(wtloss$Days), to=c(-1,1))[-train.index]
+  
+  #training the ELM
+  trained.elm <- Elm.train(x.train,y.train,Number.hn =5)
+  
+  #rescaling back the elm outputs
+  elm.fit.values <- rescale(trained.elm$predictionTrain,to= range(as.matrix(wtloss$Weight)))
+  elm.predicted.values <- rescale(Elm.predict(trained.elm, x.test),to= range(as.matrix(wtloss$Weight)))
+  
+  oldpar <- par(mar = c(5.1, 4.1, 4.1, 4.1))
+  plot(wtloss$Days, wtloss$Weight, type = "p", ylab = "Weight (kg)",main="Weight Reduction",pch=20)
+  points(wtloss$Days[train.index], elm.fit.values,col=2,type='p',pch=20)
+  points(wtloss$Days[-train.index], elm.predicted.values,col=4,type='p',pch=20)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

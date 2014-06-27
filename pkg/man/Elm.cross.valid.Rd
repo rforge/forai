@@ -1,14 +1,11 @@
 \name{Elm.cross.valid}
 \alias{Elm.cross.valid}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-%%  ~~function to do ... ~~
-}
-\description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
-}
+\title{Training ELM with cross validation.}
+\description{A k-fold cross validation on the training data is performed.}
 \usage{
-Elm.cross.valid(X.fit, Y.fit, Number.hn, n.blocks = 5, autorangeweight = FALSE, outputBias = FALSE)
+Elm.cross.valid(X.fit, Y.fit, Number.hn, n.blocks = 5, 
+autorangeweight = FALSE, outputBias = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,17 +14,20 @@ Elm.cross.valid(X.fit, Y.fit, Number.hn, n.blocks = 5, autorangeweight = FALSE, 
   \item{Number.hn}{Number of units in the hidden layer. Default is \code{10}.}
   \item{n.blocks}{an integer specifying the desired number of cross-validation folds. Default is \code{5}.}
   \item{returnmodels}{whether to return the trained models. Default is \code{FALSE}.}
-  \item{...}{additional parameters for the low level fitting function \code{Elm.train}}
+  \item{autorangeweight}{Option whether to use the automated range used for the weights. Default is \code{FALSE}.}
+  \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{NULL}}
+%  \item{PenaltyP}{Values of the regularization factor. Default is \code{0}.}
+  \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' and 'SIG'.}
+  \item{outputBias}{Option whether to use the bias parameter in the output layer}
 }
+
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+If \code{returnmodels=FALSE} (default), it returns the fitted values. If \code{returnmodels=TRUE}, it returns a list containing:.
+  \item{predictionTrain}{The fitted values for the training data.}
+  \item{trained.elms}{A list containing the k models used.}
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -45,27 +45,22 @@ Elm.cross.valid(X.fit, Y.fit, Number.hn, n.blocks = 5, autorangeweight = FALSE, 
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+set.seed(123)
+attach(wtloss)
+library("scales")
 
-## The function is currently defined as
-function (X.fit, Y.fit, Number.hn, n.blocks = 5, autorangeweight = FALSE, 
-    outputBias = FALSE) 
-{
-    n.cases = length(Y.fit)
-    index.block <- xval.buffer(n.cases, n.blocks)
-    pred.ens.valid <- matrix(NA, n.cases, 1)
-    for (nb in 1:n.blocks) {
-        fit.elm <- Elm.optmization(X.fit[index.block[[nb]]$train, 
-            , drop = FALSE], Y.fit[index.block[[nb]]$train, , 
-            drop = FALSE], Number.hn = Number.hn, autorangeweight = autorangeweight, 
-            outputBias = outputBias)
-        pred.ens.valid[index.block[[nb]]$valid, 1] = Elm.predict(fit.elm, 
-            X.fit[index.block[[nb]]$valid, , drop = FALSE])
-    }
-    return(pred.ens.valid)
-  }
+#scaling the inputs/outputs
+x.train <- rescale(as.matrix(wtloss$Days), to=c(-1,1))
+y.train <- rescale(as.matrix(wtloss$Weight), to=c(-1,1))
+
+#training the ELM
+elm.fit.values <- rescale(Elm.cross.valid(x.train,y.train,Number.hn=5,n.blocks=5),
+                          to= range(as.matrix(wtloss$Weight)))
+
+oldpar <- par(mar = c(5.1, 4.1, 4.1, 4.1))
+plot(wtloss$Days, wtloss$Weight, type = "p", ylab = "Weight (kg)",
+      main="Weight Reduction",pch=20)
+points(wtloss$Days, elm.fit.values,col=2,type='p',pch=20)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

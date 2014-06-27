@@ -134,7 +134,9 @@ Elm.predict <- function(TrainedElm, X.fit){
   }
 }#end function elm.Predict
 
-Elm.cross.valid <- function(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels = FALSE, ...){
+Elm.cross.valid <- function(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels = FALSE, 
+                            autorangeweight=FALSE, rangeweight=NULL, 
+                            activation='TANH',outputBias = FALSE){
   #loading indices
   n.cases = length(Y.fit)
   index.block <- xval.buffer(n.cases, n.blocks)
@@ -147,14 +149,15 @@ Elm.cross.valid <- function(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels
   
   for(nb in 1:n.blocks){
     t.elmf[[nb]] <- Elm.train(X.fit[index.block[[nb]]$train,,drop=FALSE], Y.fit[index.block[[nb]]$train,,drop=FALSE],
-                               Number.hn=Number.hn,...)               
+                               Number.hn=Number.hn,autorangeweight=autorangeweight, rangeweight=rangeweight, 
+                               activation=activation,outputBias = outputBias)               
     pred.ens.valid[index.block[[nb]]$valid,1] = Elm.predict(t.elmf[[nb]], X.fit[index.block[[nb]]$valid,,drop=FALSE])
   }#end blocks
   
-  if (returnmodels = FALSE){
+  if (returnmodels == FALSE){
     return(pred.ens.valid)
   }else{
-    return(trained.elms = t.elmf, predictionTrain =  pred.ens.valid)
+    return(list(predictionTrain =  pred.ens.valid, trained.elms = t.elmf))
   }
 }# end ensemble
 

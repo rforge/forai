@@ -47,7 +47,7 @@ important.}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-  set.seed(123)
+  set.seed(12345)
   attach(wtloss)
   library("scales")
 
