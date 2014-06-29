@@ -55,7 +55,7 @@ y.train <- rescale(as.matrix(wtloss$Weight), to=c(-1,1))
 
 #training the ELM
 elm.fit.values <- rescale(Elm.cross.valid(x.train,y.train,Number.hn=5,n.blocks=5),
-                          to= range(as.matrix(wtloss$Weight)))
+                          to= range(as.matrix(wtloss$Weight)),from=c(-1,1))
 
 oldpar <- par(mar = c(5.1, 4.1, 4.1, 4.1))
 plot(wtloss$Days, wtloss$Weight, type = "p", ylab = "Weight (kg)",

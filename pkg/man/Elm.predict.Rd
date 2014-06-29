@@ -33,7 +33,7 @@ Elm.predict(TrainedElm, X.fit)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-  set.seed(12345)
+  set.seed(123)
   attach(wtloss)
   library("scales")
   
@@ -48,8 +48,10 @@ Elm.predict(TrainedElm, X.fit)
   trained.elm <- Elm.train(x.train,y.train,Number.hn =5)
   
   #rescaling back the elm outputs
-  elm.fit.values <- rescale(trained.elm$predictionTrain,to= range(as.matrix(wtloss$Weight)))
-  elm.predicted.values <- rescale(Elm.predict(trained.elm, x.test),to= range(as.matrix(wtloss$Weight)))
+  elm.fit.values <- rescale(trained.elm$predictionTrain,
+                            to= range(as.matrix(wtloss$Weight)),from=c(-1,1))
+  elm.predicted.values <- rescale(Elm.predict(trained.elm, x.test),
+                                to= range(as.matrix(wtloss$Weight)),from=c(-1,1))
   
   oldpar <- par(mar = c(5.1, 4.1, 4.1, 4.1))
   plot(wtloss$Days, wtloss$Weight, type = "p", ylab = "Weight (kg)",main="Weight Reduction",pch=20)

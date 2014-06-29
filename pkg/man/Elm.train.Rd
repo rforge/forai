@@ -47,7 +47,7 @@ important.}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-  set.seed(12345)
+  set.seed(123)
   attach(wtloss)
   library("scales")
 
@@ -59,7 +59,7 @@ important.}
   trained.elm <- Elm.train(x.train,y.train,Number.hn =5)
   
   #rescaling back the elm outputs
-  elm.fit.values <- rescale(trained.elm$predictionTrain,to= range(as.matrix(wtloss$Weight)))
+  elm.fit.values <- rescale(trained.elm$predictionTrain,to= range(as.matrix(wtloss$Weight)),from=c(-1,1))
   
   RMSE(wtloss$Weight,elm.fit.values)
   
