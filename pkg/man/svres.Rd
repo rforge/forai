@@ -47,7 +47,7 @@ http://www.sciencedirect.com/science/article/pii/S0098300412002269
 
 Cherkassky, V. and Ma, Y., 2004. Practical selection of SVM parameters
      and noise estimation for SVM regression. Neural Netw. 17, 113-126.       
-%% ~put references to the literature/web site here ~
+}
 \author{Aranildo R. Lima and Alex J. Cannon}
 \note{
 %%  ~~further notes~~

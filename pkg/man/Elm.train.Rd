@@ -17,14 +17,14 @@ Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE,
   \item{autorangeweight}{Option whether to use the automated range used for the weights. Default is \code{FALSE}.}
   \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{NULL}}
 %  \item{PenaltyP}{Values of the regularization factor. Default is \code{0}.}
-  \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' and 'SIG'.}
+  \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' (default) and 'SIG'.}
   \item{outputBias}{Option whether to use the bias parameter in the output layer}
 }
 
 \value{
   \item{inputWeight}{Set of weights used.}
   \item{biasofHN}{Set of bias used.}
-  \item{matrixBeta}{{Set of weights adjusted.}
+  \item{matrixBeta}{Set of weights adjusted.}
   \item{predictionTrain}{The fitted values for the training data.}
   \item{rangeweight}{Used range of the random weight initialization (\code{[-rangeweight,rangeweight]}},
   \item{activation}{Activation function of the hidden layer neurons.}

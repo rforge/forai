@@ -162,24 +162,24 @@ Elm.cross.valid <- function(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels
 }# end ensemble
 
 
-Elm.search.hn <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5, 
-                          ErrorFunc=RMSE, percentValid=20,maxHiddenNodes = NULL,
-                          Trace=TRUE, autorangeweight=FALSE,outputBias = FALSE){
+Elm.search.hc <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5, 
+                          ErrorFunc=RMSE, PercentValid=20,maxHiddenNodes = NULL,
+                          Trace=TRUE, autorangeweight=FALSE, rangeweight=NULL, 
+                          activation='TANH',outputBias = FALSE){
   ###################### ajustando as informacoes do conjunto  #############################
   acceleration <- 1.51
   candidates <- c((-1/4*acceleration),0,(1/acceleration),acceleration)
-  currentPoint <- 3
+  currentPoint <- 2
   stepSize <- 2
   cand.error.train <- rep(Inf,4) #training error of the candidates
   cand.error.valid <- rep(Inf,4) #training RMSE of the candidates
-  bestHN <- c(Inf,Inf,Inf) #best HN, training error and validation error
+  bestHN <- matrix(Inf,1,3) #best HN, training error and validation error
+  colnames(bestHN) <- c('HN',"TRAIN","VALID")
   
   ######### dividing valid set ############################
   n.cases = length(Y.fit)
-  if (n.blocks!=1){
-    index.block <- xval.buffer(n.cases, n.blocks)
-  }else{
-    indValid <- n.cases-round((n.cases*(percentValid/100)))
+  if (n.blocks==1){
+    indValid <- n.cases-round((n.cases*(PercentValid/100)))
   }
   
   if(is.null(maxHiddenNodes)){
@@ -196,22 +196,23 @@ Elm.search.hn <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5,
     }
   
     #filling the actual point without calculate it again
-    cand.error.train[2] = bestHN[2]
-    cand.error.valid[2] = bestHN[3]
+    cand.error.train[2] = bestHN[,'TRAIN']
+    cand.error.valid[2] = bestHN[,'VALID']
     
-    ############################### Random generate input weights inputWeight (w_i) and biases biasofHN (b_i) of hidden neurons
+    ############################### Testing candidates  #################################
     for (ic in c(1,3,4)){ #1:length(candidates)
       for (e in 1:n.ensem) {
         n.hidden.can <- round(currentPoint + stepSize * candidates[ic])
         
-        #constraint
-        #testHiddenNeurons =max(1,testHiddenNeurons)
-        
         if(n.blocks!=1){
-            pred.ens.valid[,e] = Elm.cross.valid(X.fit,Y.fit,n.hidden.can,n.blocks,autorangeweight,outputBias=outputBias)
+            pred.ens.valid[,e] = Elm.cross.valid(X.fit,Y.fit,n.hidden.can,n.blocks,
+                                                 autorangeweight=autorangeweight, rangeweight=rangeweight, 
+                                                 activation=activation,outputBias = outputBias)
         }else{
-            fit.elm <- Elm.optmization(X.fit[(1:indValid),,drop=FALSE],Y.fit[(1:indValid),drop=FALSE], 
-                                       Number.hn=n.hidden.can,autorangeweight=autorangeweight,outputBias=outputBias) 
+            fit.elm <- Elm.train(X.fit[(1:indValid),,drop=FALSE],Y.fit[(1:indValid),drop=FALSE], 
+                                       Number.hn=n.hidden.can, 
+                                 autorangeweight=autorangeweight, rangeweight=rangeweight, 
+                                 activation=activation,outputBias = outputBias) 
             pred.ens.train[,e] = fit.elm$predictionTrain
             pred.ens.valid[,e] = Elm.predict(fit.elm, X.fit[((indValid+1):nTrain),,drop=FALSE])
         }
@@ -226,38 +227,40 @@ Elm.search.hn <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5,
     }#end candidates
     
     bestSolution <- which.min(cand.error.valid)
-    if((bestHN[3] > cand.error.valid[bestSolution]) & (bestHN[2] > cand.error.train[bestSolution])){
-      if(bestHN[1] == max(1,round(currentPoint + stepSize * candidates[bestSolution]))){
-        cat('REPITIU??: \n')
+    if((bestHN[,"VALID"] > cand.error.valid[bestSolution]) & (bestHN[,"VALID"] > cand.error.train[bestSolution])){
+      if(bestHN[,"HN"] == max(1,round(currentPoint + stepSize * candidates[bestSolution]))){
+        #cat('Best solution : \n')
         break
       } 
         
-      bestHN[1] = max(1,round(currentPoint + stepSize * candidates[bestSolution]))
-      bestHN[2] = cand.error.train[bestSolution]
-      bestHN[3] = cand.error.valid[bestSolution]
+      bestHN[,"HN"] = max(1,round(currentPoint + stepSize * candidates[bestSolution]))
+      bestHN[,"TRAIN"] = cand.error.train[bestSolution]
+      bestHN[,"VALID"] = cand.error.valid[bestSolution]
       if(Trace){
-        cat('hn: ', bestHN[1], ' step:',stepSize,
+        cat('hn: ', bestHN[,"HN"], ' step:',stepSize,
             'RMSE Train:', cand.error.train[bestSolution], 
             'RMSE Valid:', cand.error.valid[bestSolution], ' bs:', bestSolution, ' Cand:', 
             round(currentPoint + stepSize * candidates), '\n')
       }
       
       if (bestSolution !=2){
-        currentPoint = bestHN[1]
+        currentPoint = bestHN[,"HN"]
         stepSize <- max(1, round(stepSize*candidates[bestSolution]))  
         #cat('??: ',stepSize * candidates[bestSolution],' forte:',bestSolution,'\n')
+      }else{
+        break
       }
-      if(bestHN[1] >= maxHiddenNodes) break
+      if(bestHN[,"HN"] >= maxHiddenNodes) break
     }else{
         break
     }#end if bestHN
   }#end while
   
   if(Trace){
-    cat('Best Solution: ',bestHN[1],'\n')
+    cat('Final Best Solution: ',bestHN[,"HN"],'\n')
   }
   
-  return (bestHN[1])
+  return (bestHN[,"HN"])
 }# end function Elm.searchNeuronsHC
 
 

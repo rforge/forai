@@ -4,8 +4,9 @@
 \title{Training ELM with cross validation.}
 \description{A k-fold cross validation on the training data is performed.}
 \usage{
-Elm.cross.valid(X.fit, Y.fit, Number.hn, n.blocks = 5, 
-autorangeweight = FALSE, outputBias = FALSE)
+Elm.cross.valid(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels = FALSE, 
+                            autorangeweight=FALSE, rangeweight=NULL, 
+                            activation='TANH',outputBias = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,7 +18,7 @@ autorangeweight = FALSE, outputBias = FALSE)
   \item{autorangeweight}{Option whether to use the automated range used for the weights. Default is \code{FALSE}.}
   \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{NULL}}
 %  \item{PenaltyP}{Values of the regularization factor. Default is \code{0}.}
-  \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' and 'SIG'.}
+  \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' (default) and 'SIG'.}
   \item{outputBias}{Option whether to use the bias parameter in the output layer}
 }
 
