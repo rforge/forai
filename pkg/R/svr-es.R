@@ -66,8 +66,8 @@ train.svr <-
     indValid <- nTrain-round((nTrain*(PercentValid/100)))
     if(SplitRandom){
       cases <- sample(nTrain)
-      x.fit <- x.train[cases,,drop=FALSE]
-      y.fit <- y.train[cases]
+      x.fit <- xtrain[cases,,drop=FALSE]
+      y.fit <- ytrain[cases]
     }
     x.fit.train <- xtrain[1:indValid,,drop=FALSE]
     x.fit.valid <- xtrain[(indValid+1):nTrain,,drop=FALSE]
@@ -112,7 +112,7 @@ svres <-
       stepvars <- colnames(X.train) %in% step.coef
     }else if(Step & StepBoruta){
       trf <- suppressWarnings(tuneRF(X.train, Y.train, doBest=TRUE,
-                                     plot=FALSE, ntree=500, nodesize=1))
+                                     plot=FALSE, ntreeTry=500, nodesize=1))
       bor <- Boruta(x=as.data.frame(X.train), y=Y.train, light=FALSE,
                     doTrace=2, ntree=trf$ntree, mtry=trf$mtry, nodesize=1)
       bor <- suppressWarnings(TentativeRoughFix(bor))

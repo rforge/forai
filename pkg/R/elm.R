@@ -207,14 +207,14 @@ Elm.search.hc <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5,
         if(n.blocks!=1){
             pred.ens.valid[,e] = Elm.cross.valid(X.fit,Y.fit,n.hidden.can,n.blocks,
                                                  autorangeweight=autorangeweight, rangeweight=rangeweight, 
-                                                 activation=activation,outputBias = outputBias)
+                                                 activation=activation, outputBias=outputBias)
         }else{
             fit.elm <- Elm.train(X.fit[(1:indValid),,drop=FALSE],Y.fit[(1:indValid),drop=FALSE], 
                                        Number.hn=n.hidden.can, 
                                  autorangeweight=autorangeweight, rangeweight=rangeweight, 
-                                 activation=activation,outputBias = outputBias) 
+                                 activation=activation, outputBias=outputBias) 
             pred.ens.train[,e] = fit.elm$predictionTrain
-            pred.ens.valid[,e] = Elm.predict(fit.elm, X.fit[((indValid+1):nTrain),,drop=FALSE])
+            pred.ens.valid[,e] = Elm.predict(fit.elm, X.fit[((indValid+1):n.cases),,drop=FALSE])
         }
       }# end ensemble
       
@@ -222,7 +222,7 @@ Elm.search.hc <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5,
         cand.error.train[ic] = cand.error.valid[ic] = ErrorFunc(Y.fit,rowMeans(pred.ens.valid))
       }else{
         cand.error.train[ic] = ErrorFunc(Y.fit[(1:indValid),drop=FALSE],rowMeans(pred.ens.train))
-        cand.error.valid[ic] = ErrorFunc(Y.fit[((indValid+1):nTrain),drop=FALSE],rowMeans(pred.ens.valid))        
+        cand.error.valid[ic] = ErrorFunc(Y.fit[((indValid+1):n.cases),drop=FALSE],rowMeans(pred.ens.valid))        
       }
     }#end candidates
     
