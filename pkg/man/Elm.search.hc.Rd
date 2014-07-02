@@ -28,6 +28,8 @@ Elm.search.hc(X.fit, Y.fit, n.ensem= 10, n.blocks=5, ErrorFunc=RMSE, PercentVali
 }
 \value{The best number of hidden neurons found by the automatic procedure.}
 \references{
+  Lima, A.R., A.J. Cannon and W.W. Hsieh. Nonlinear regression in environmental sciences using extreme learning machines.   Environmental Modelling and Software (submitted 2014/2/3) 
+  
   Yuret, D., 1994. From genetic algorithms to efficient optimization. 
   Technical Report 1569. MIT AI Laboratory.
 }
