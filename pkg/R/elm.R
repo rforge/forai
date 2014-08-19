@@ -88,13 +88,13 @@ Elm.train <-
   
   Y=as.vector(unlist(t(H %*% outputWeight)))  #   Y: the actual output of the training data
   #for the os-ELM
-  #P0 <- ginv(t(H)%*%H)
+  P0 <- ginv(t(H)%*%H)
   #rm(H)
   
   list(inputWeight=inputWeight,
        biasofHN=biasofHN,
        matrixBeta=outputWeight,
-       #matrixP=P0, 
+       matrixP=P0, 
        predictionTrain=Y,
        rangeweight=rangew,
        activation=activation,
@@ -269,3 +269,84 @@ Elm.search.hc <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5,
 #                                       ELM Ends Here                                           #
 #                                                                                               #
 #################################################################################################
+
+#################################################################################################
+#                                                                                               #
+#                                       OL-ELM Starts Here                                           #
+#                                                                                               #
+#################################################################################################
+Olelm.update <- function(TrainedElm, ppredictors, ptarget){
+  ############# preparin the set   ######################
+  predictors <- t(ppredictors)
+  Target <- ptarget
+  n.TrainingData=ncol(predictors)
+  
+  ############# reading from the previous ELM   ######################
+  inputWeight = TrainedElm$inputWeight
+  biasofHN = TrainedElm$biasofHN
+  tempH = TrainedElm$inputWeight%*%predictors   # Calculate the partial hidden layer output matrix
+  
+  ind=matrix(1,1,n.TrainingData)
+  biasMatrix = TrainedElm$biasofHN%*%ind              #   Extend the bias matrix biasofHN to match the demention of H
+  rm(ind) #limpando a memoria
+  tempH=tempH + biasMatrix
+  rm(biasMatrix)
+  
+  ############# adding chunk  ######################
+  switch(TrainedElm$activation,
+         'TANH' = {H=t(tanh(tempH))},
+         'RECT' = {H=t(log(1+exp(tempH)))},
+{H= t(1 / (1 + exp(-tempH)))}
+  )
+rm(tempH)
+
+if (TrainedElm$outputBias){
+  new.Matrix <- olelm.update.beta(cbind(1,H), TrainedElm$matrixP, TrainedElm$matrixBeta, Target)
+}else{
+  new.Matrix <- olelm.update.beta(H, TrainedElm$matrixP, TrainedElm$matrixBeta, Target)
+}
+
+return(list(inputWeight=inputWeight,
+            biasofHN=biasofHN,
+            matrixBeta=new.Matrix$matrixBeta,
+            matrixP=new.Matrix$matrixP,
+            PredictionTrain=new.Matrix$PredictionTrain,
+            rangeweight=TrainedElm$rangeweight,
+            activation=TrainedElm$activation,
+            outputBias=TrainedElm$outputBias))
+}#end function olelm.update
+
+olelm.update.beta <- function(H0, P0, B0, Target){
+  ############# preparin the set   ######################
+  n.TrainingData <- nrow(Target)
+  
+  #Calculate the output weight beta
+  if (n.TrainingData > 1){
+    identityMatrix <- diag(nrow(H0))
+    inverseStep <- ginv(identityMatrix+(H0%*%P0%*%t(H0)))
+    rm(identityMatrix)
+    newP = P0 - (P0%*%t(H0))%*%inverseStep%*%(H0%*%P0)
+    rm(inverseStep)
+  }else{
+    denominator <- P0%*%t(H0)%*%H0%*%P0
+    numerator <- 1+H0%*%P0%*%t(H0)
+    
+    newP = P0 - (denominator/as.numeric(numerator))
+    rm(denominator)
+  }
+  newBeta = B0 + (newP%*%t(H0))%*%(Target-H0%*%B0) 
+  
+  Y=as.vector(unlist(t(H0 %*% newBeta)))                    #   Y: the actual output of the training data
+  
+  return(list(matrixBeta=newBeta,
+              matrixP=newP,
+              PredictionTrain=Y))
+}#end function olelm.update
+
+
+#################################################################################################
+#                                                                                               #
+#                                       OL-ELM Ends Here                                        #
+#                                                                                               #
+#################################################################################################
+

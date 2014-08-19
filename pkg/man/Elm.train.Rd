@@ -25,6 +25,7 @@ Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE,
   \item{inputWeight}{Set of weights used.}
   \item{biasofHN}{Set of bias used.}
   \item{matrixBeta}{Set of weights adjusted.}
+  \item{matrixP}{matrixP.}
   \item{predictionTrain}{The fitted values for the training data.}
   \item{rangeweight}{Used range of the random weight initialization (\code{[-rangeweight,rangeweight]}},
   \item{activation}{Activation function of the hidden layer neurons.}
