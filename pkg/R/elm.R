@@ -51,12 +51,11 @@ Elm.train <-
     }  
   }else{
     rangew <- 1
-    a <- 1
   }
 
   ################## Random generate input weights inputWeight (w_i) and biases biasofHN (b_i) of hidden neurons
   inputWeight=matrix(runif(Number.hn*n.InputNeurons, min=-1, max=1),Number.hn, n.InputNeurons)*rangew
-  biasofHN=runif(Number.hn, min=-1, max=1)*a
+  biasofHN=runif(Number.hn, min=-1, max=1)
   
   tempH=inputWeight%*%X.fit
   ind=matrix(1,1,n.TrainingData)
