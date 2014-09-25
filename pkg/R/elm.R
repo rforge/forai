@@ -30,8 +30,8 @@ library(CaDENCE)
 #                                                                                               #
 #################################################################################################
 Elm.train <- 
-  function(X.fit, Y.fit, Number.hn=10, autorangeweight=FALSE, rangeweight=NULL, 
-           activation='TANH',outputBias = FALSE){
+  function(X.fit, Y.fit, Number.hn=10, autorangeweight=FALSE, rangeweight=1, 
+           activation='TANH',outputBias = FALSE, rangebias=1){
   ############## loading the values ###################
   X.fit <- t(X.fit)
   Target <- Y.fit
@@ -40,22 +40,17 @@ Elm.train <-
   
   ####### automatic range of the weights based on the number of predictors  
   if(autorangeweight){
-    if (is.null(rangeweight)){
       switch(activation,
              'TANH' = {a=1},
                       {a=2}
               )
-      rangew <- a*(n.InputNeurons)^-.5 
-    }else{
-      rangew <- rangeweight
-    }  
-  }else{
-    rangew <- 1
+      rangeweight <- a*(n.InputNeurons)^-.5 
+      rangebias <- rangeweight
   }
 
   ################## Random generate input weights inputWeight (w_i) and biases biasofHN (b_i) of hidden neurons
-  inputWeight=matrix(runif(Number.hn*n.InputNeurons, min=-1, max=1),Number.hn, n.InputNeurons)*rangew
-  biasofHN=runif(Number.hn, min=-1, max=1)
+  inputWeight=matrix(runif(Number.hn*n.InputNeurons, min=-1, max=1),Number.hn, n.InputNeurons)*rangeweight
+  biasofHN=runif(Number.hn, min=-1, max=1)*rangebias
   
   tempH=inputWeight%*%X.fit
   ind=matrix(1,1,n.TrainingData)
@@ -95,9 +90,10 @@ Elm.train <-
        matrixBeta=outputWeight,
        matrixP=P0, 
        predictionTrain=Y,
-       rangeweight=rangew,
+       rangeweight=rangeweight,
        activation=activation,
-       outputBias=outputBias)
+       outputBias=outputBias,
+       rangebias = rangebias)
 }#end function elm.optmization
 
 Elm.predict <- function(TrainedElm, X.fit){
@@ -134,8 +130,8 @@ Elm.predict <- function(TrainedElm, X.fit){
 }#end function elm.Predict
 
 Elm.cross.valid <- function(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels = FALSE, 
-                            autorangeweight=FALSE, rangeweight=NULL, 
-                            activation='TANH',outputBias = FALSE){
+                            autorangeweight=FALSE, rangeweight=1, 
+                            activation='TANH',outputBias = FALSE, rangebias=1){
   #loading indices
   n.cases = length(Y.fit)
   index.block <- xval.buffer(n.cases, n.blocks)
@@ -149,7 +145,7 @@ Elm.cross.valid <- function(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels
   for(nb in 1:n.blocks){
     t.elmf[[nb]] <- Elm.train(X.fit[index.block[[nb]]$train,,drop=FALSE], Y.fit[index.block[[nb]]$train,,drop=FALSE],
                                Number.hn=Number.hn,autorangeweight=autorangeweight, rangeweight=rangeweight, 
-                               activation=activation,outputBias = outputBias)               
+                               activation=activation,outputBias = outputBias, rangebias= rangebias)               
     pred.ens.valid[index.block[[nb]]$valid,1] = Elm.predict(t.elmf[[nb]], X.fit[index.block[[nb]]$valid,,drop=FALSE])
   }#end blocks
   
@@ -163,8 +159,8 @@ Elm.cross.valid <- function(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels
 
 Elm.search.hc <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5, 
                           ErrorFunc=RMSE, PercentValid=20,maxHiddenNodes = NULL,
-                          Trace=TRUE, autorangeweight=FALSE, rangeweight=NULL, 
-                          activation='TANH',outputBias = FALSE){
+                          Trace=TRUE, autorangeweight=FALSE, rangeweight=1, 
+                          activation='TANH',outputBias = FALSE, rangebias=1){
   ###################### ajustando as informacoes do conjunto  #############################
   acceleration <- 1.51
   candidates <- c((-1/4*acceleration),0,(1/acceleration),acceleration)
@@ -206,12 +202,12 @@ Elm.search.hc <- function(X.fit, Y.fit, n.ensem= 10, n.blocks=5,
         if(n.blocks!=1){
             pred.ens.valid[,e] = Elm.cross.valid(X.fit,Y.fit,n.hidden.can,n.blocks,
                                                  autorangeweight=autorangeweight, rangeweight=rangeweight, 
-                                                 activation=activation, outputBias=outputBias)
+                                                 activation=activation, outputBias=outputBias, rangebias=rangebias)
         }else{
             fit.elm <- Elm.train(X.fit[(1:indValid),,drop=FALSE],Y.fit[(1:indValid),drop=FALSE], 
                                        Number.hn=n.hidden.can, 
                                  autorangeweight=autorangeweight, rangeweight=rangeweight, 
-                                 activation=activation, outputBias=outputBias) 
+                                 activation=activation, outputBias=outputBias, rangebias=rangebias) 
             pred.ens.train[,e] = fit.elm$predictionTrain
             pred.ens.valid[,e] = Elm.predict(fit.elm, X.fit[((indValid+1):n.cases),,drop=FALSE])
         }
@@ -312,7 +308,8 @@ return(list(inputWeight=inputWeight,
             PredictionTrain=new.Matrix$PredictionTrain,
             rangeweight=TrainedElm$rangeweight,
             activation=TrainedElm$activation,
-            outputBias=TrainedElm$outputBias))
+            outputBias=TrainedElm$outputBias,
+            rangebias=TrainedElm$outputBias))
 }#end function olelm.update
 
 olelm.update.beta <- function(H0, P0, B0, Target){

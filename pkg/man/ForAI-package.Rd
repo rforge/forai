@@ -14,8 +14,8 @@ The package "ForAI" combines machine learning methods as artificial neural netwo
 \tabular{ll}{
 Package: \tab ForAI\cr
 Type: \tab Package\cr
-Version: \tab 0.0.2\cr
-Date: \tab 2014-09-22\cr
+Version: \tab 0.0.4\cr
+Date: \tab 2014-09-25\cr
 Depends: \tab e1071, FNN\cr
 Suggests: \tab MASS, qualV, Boruta, CaDENCE\cr
 License: \tab GPL-2\cr

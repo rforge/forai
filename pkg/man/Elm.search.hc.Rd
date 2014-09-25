@@ -5,8 +5,8 @@
 \description{Finds the number of hidden neurons using the hill climbing procedure.}
 \usage{
 Elm.search.hc(X.fit, Y.fit, n.ensem= 10, n.blocks=5, ErrorFunc=RMSE, PercentValid=20,
-              maxHiddenNodes = NULL, Trace=TRUE, autorangeweight=FALSE, rangeweight=NULL, 
-              activation='TANH',outputBias = FALSE)
+              maxHiddenNodes = NULL, Trace=TRUE, autorangeweight=FALSE, rangeweight=1, 
+              activation='TANH',outputBias = FALSE,rangebias = 1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -19,9 +19,10 @@ Elm.search.hc(X.fit, Y.fit, n.ensem= 10, n.blocks=5, ErrorFunc=RMSE, PercentVali
   \item{maxHiddenNodes}{Maximum number of hidden nodes. Default is \code{NULL} which means \code{number of cases -1}.}
   \item{Trace}{If \code{TRUE}, information is printed during the running of \code{svres}. Default is \code{TRUE}.}
   \item{autorangeweight}{Option whether to use the automated range used for the weights. Default is \code{FALSE}.}
-  \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{NULL}}
+  \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{1}}
   \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' (default) and 'SIG'. }
   \item{outputBias}{Option whether to use the bias parameter in the output layer}
+  \item{rangebias}{Initial random bias on \code{[-rangebias,rangebias]}. The default is \code{1}}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~

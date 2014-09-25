@@ -5,8 +5,9 @@
 \description{A k-fold cross validation on the training data is performed.}
 \usage{
 Elm.cross.valid(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels = FALSE, 
-                            autorangeweight=FALSE, rangeweight=NULL, 
-                            activation='TANH',outputBias = FALSE)
+                            autorangeweight=FALSE, rangeweight=1, 
+                            activation='TANH',outputBias = FALSE,
+                            rangebias = 1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,10 +17,11 @@ Elm.cross.valid(X.fit, Y.fit, Number.hn=10, n.blocks=5, returnmodels = FALSE,
   \item{n.blocks}{an integer specifying the desired number of cross-validation folds. Default is \code{5}.}
   \item{returnmodels}{whether to return the trained models. Default is \code{FALSE}.}
   \item{autorangeweight}{Option whether to use the automated range used for the weights. Default is \code{FALSE}.}
-  \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{NULL}}
+  \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{1}}
 %  \item{PenaltyP}{Values of the regularization factor. Default is \code{0}.}
   \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' (default) and 'SIG'.}
   \item{outputBias}{Option whether to use the bias parameter in the output layer}
+  \item{rangebias}{Initial random bias on \code{[-rangebias,rangebias]}. The default is \code{1}}
 }
 
 \details{

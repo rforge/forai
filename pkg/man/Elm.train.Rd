@@ -7,7 +7,8 @@
 }
 \usage{
 Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE, 
-          rangeweight = NULL, activation = "TANH", outputBias = FALSE)
+          rangeweight = 1, activation = "TANH", outputBias = FALSE,
+          rangebias = 1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -15,10 +16,11 @@ Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE,
   \item{Y.fit}{Response vector (numeric) used to train the model.}
   \item{Number.hn}{Number of units in the hidden layer. Default is \code{10}.}
   \item{autorangeweight}{Option whether to use the automated range used for the weights. Default is \code{FALSE}.}
-  \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{NULL}}
+  \item{rangeweight}{Initial random weights on \code{[-rangeweight,rangeweight]}. The default is \code{1}}
 %  \item{PenaltyP}{Values of the regularization factor. Default is \code{0}.}
   \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' (default) and 'SIG'.}
   \item{outputBias}{Option whether to use the bias parameter in the output layer}
+  \item{rangebias}{Initial random bias on \code{[-rangebias,rangebias]}. The default is \code{1}}
 }
 
 \value{
@@ -27,14 +29,20 @@ Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE,
   \item{matrixBeta}{Set of weights adjusted.}
   \item{matrixP}{matrixP.}
   \item{predictionTrain}{The fitted values for the training data.}
-  \item{rangeweight}{Used range of the random weight initialization (\code{[-rangeweight,rangeweight]}},
+  \item{rangeweight}{Used range of the random weight initialization (\code{[-rangeweight,rangeweight]}}.
   \item{activation}{Activation function of the hidden layer neurons.}
   \item{outputBias}{Option whether to use the bias parameter in the output layer.}
+  \item{rangebias}{Used range of the random bias initialization (\code{[-rangebias,rangebias]}.}
 }
 \references{
-       G.-B. Huang, Q.-Y. Zhu, C.-K. Siew (2006)                              
-       Extreme learning machine: Theory and applications                      
-       Neurocomputing 70 (2006) 489-501                                       
+      G.-B. Huang, Q.-Y. Zhu, C.-K. Siew (2006)                              
+      Extreme learning machine: Theory and applications                      
+      Neurocomputing 70 (2006) 489-501 
+       
+      Lima, A.R.; A.J. Cannon and W.W. Hsieh. Nonlinear Regression In Environmental
+      Sciences Using Extreme Learning Machines. Submited to: Environmental Modelling
+      and Software - ELSEVIER (submitted 2014/2/3).
+
 }
 
 \author{Aranildo Lima}
