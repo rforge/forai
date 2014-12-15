@@ -6,7 +6,7 @@
   \code{svres} is a hybrid algorithm which combines support vector regression and evolutionary strategy (uncorrelated mutation with \emph{p} step sizes) to build predictive models.
 }
 \usage{
-  svres(X.train, Y.train, X.test, PercentValid = 20, Generations = 500, InitialGamma = 0.001, ErrorFunc = MSE, Step = TRUE, StepBoruta = FALSE, SplitRandom = FALSE, Trace = TRUE, dTrace = 10, earlyStop = 50, kfold = 1)
+  svres(X.train, Y.train, X.test, PercentValid = 20, Generations = 500, InitialGamma = 0.001, ErrorFunc = MSE, Step = FALSE, StepBoruta = FALSE, SplitRandom = FALSE, Trace = TRUE, dTrace = 10, earlyStop = 50, kfold = 1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

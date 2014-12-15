@@ -20,7 +20,7 @@ Elm.train(X.fit, Y.fit, Number.hn = 10, autorangeweight = FALSE,
 %  \item{PenaltyP}{Values of the regularization factor. Default is \code{0}.}
   \item{activation}{Activation function of the hidden layer neurons. Available functions are: 'TANH' (default) and 'SIG'.}
   \item{outputBias}{Option whether to use the bias parameter in the output layer}
-  \item{rangebias}{Initial random bias on \code{[-rangebias,rangebias]}. The default is \code{1}}
+  \item{rangebias}{Initial random bias on \code{[-rangebias,rangebias]}. The default is \code{NULL}}
 }
 
 \value{

@@ -148,44 +148,52 @@ svres <-
     }
     mutation <- hypparameter
     noevolution <- 0
+    error.min <- c(0.000001,.01,1)
     ############ running the generations #######################################
     for (d in 1:Generations) {
       noevolution = noevolution +1
-      firstNorm <- rnorm(3)
-      son <- abs(hypparameter+(mutation*firstNorm))
+      firstNorm <- rnorm(1)
       tau <- 1/sqrt(2*sqrt(3))
       taul <- 1/sqrt(6)
-      firstNorm <- rnorm(1)
       secNorm <- rnorm(3)
       mutationtemp <- mutation*exp(taul*firstNorm+tau*secNorm)
-      fitted.svr <- train.svr(x.fit, y.fit, son, ErrorFunc, PercentValid, kfold)
-      
-      if(fitted.svr$error.svm){
-        ffSonValid <- Inf
-      } else{
-        ffSonValid <- fitted.svr$ffValid
+
+      if (any(mutationtemp<error.min)){
+        index.min <- which(mutationtemp<error.min) 
+        mutationtemp[index.min] = error.min[index.min]
       }
       
-      if(ffSonValid < ffValid){
-        if(kfold > 1 ){
-          hypparameter <- son
-          mutation <- mutationtemp
-          ffValid <- ffSonValid
-          noevolution <- 0
-        }else{
-          ffSonTrain <- fitted.svr$ffTrain
-          if (ffSonTrain < ffTrain){
+      son <- hypparameter+(mutationtemp*rnorm(3))
+      if (all(mutationtemp>0)){
+        fitted.svr <- train.svr(x.fit, y.fit, son, ErrorFunc, PercentValid, kfold)
+        
+        if(fitted.svr$error.svm){
+          ffSonValid <- Inf
+        } else{
+          ffSonValid <- fitted.svr$ffValid
+        }
+        
+        if(ffSonValid < ffValid){
+          if(kfold > 1 ){
             hypparameter <- son
             mutation <- mutationtemp
             ffValid <- ffSonValid
-            ffTrain <- ffSonTrain
             noevolution <- 0
-          }#end if train
-        }#end if flod (crossvalidation)
-      }#end if valid
+          }else{
+            ffSonTrain <- fitted.svr$ffTrain
+            if (ffSonTrain < ffTrain){
+              hypparameter <- son
+              mutation <- mutationtemp
+              ffValid <- ffSonValid
+              ffTrain <- ffSonTrain
+              noevolution <- 0
+            }#end if train
+          }#end if flod (crossvalidation)
+        }#end if valid
+      }#end if positive values
       
       if(Trace & ((d%%dTrace)==0)){
-        cat('Generation --> ', d, "\n")
+        cat('Generation --> ', d, "Par:", hypparameter, " and ",  mutation, "\n")
         if(kfold > 1 ){
           cat("Error: Valid --> ", ffValid,"\n")
         }else{
