@@ -16,7 +16,7 @@ olmlr.update <- function(TrainedMLR, X.fit, Y.fit){
   H <- cbind(1, X.fit)
   Target <- Y.fit
   
-  if (nrow(MTarget) > 1){
+  if (nrow(Y.fit) > 1){
     identityMatrix <- diag(nrow(H))
     inverseStep <- ginv(identityMatrix+(H%*%TrainedMLR$MatrixP%*%t(H)))
     rm(identityMatrix)
